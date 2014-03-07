@@ -72,39 +72,41 @@ when "windows"
   end
 end
 
-# servie has been started when yum install. stop it first
-service "couchbase-server" do
-  action :stop
-end
+# TODO: need more work to be more safe
 
-ori_var_dir = File.join(node['couchbase']['server']['install_dir'],"var")
-bak_var_dir = File.join(node['couchbase']['server']['install_dir'],"var.bak")
-ebs_var_dir = File.join(node['couchbase']['server']['ebs_dir'],"var")
-
-directory node['couchbase']['server']['ebs_dir'] do
-  owner "couchbase"
-  group "couchbase"
-  mode 0755
-end
-
-execute "move_var_to_ebs" do
-  command "mv #{ori_var_dir} #{node['couchbase']['server']['ebs_dir']}"
-  creates ebs_var_dir
-  action :run
-end
-
-execute "backup_original_var" do
-  # ori_var_dir could be either a symbol link or directory
-  command "mv -f #{ori_var_dir} #{bak_var_dir}"
-  action :run
-  only_if { ::File.exists?(ori_var_dir) }
-end
-
-link ori_var_dir do
-  owner "couchbase"
-  group "couchbase"
-  to ebs_var_dir
-end
+# # servie has been started when yum install. stop it first
+# service "couchbase-server" do
+#   action :stop
+# end
+# 
+# ori_var_dir = File.join(node['couchbase']['server']['install_dir'],"var")
+# bak_var_dir = File.join(node['couchbase']['server']['install_dir'],"var.bak")
+# ebs_var_dir = File.join(node['couchbase']['server']['ebs_dir'],"var")
+# 
+# directory node['couchbase']['server']['ebs_dir'] do
+#   owner "couchbase"
+#   group "couchbase"
+#   mode 0755
+# end
+# 
+# execute "move_var_to_ebs" do
+#   command "mv #{ori_var_dir} #{node['couchbase']['server']['ebs_dir']}"
+#   creates ebs_var_dir
+#   action :run
+# end
+# 
+# execute "backup_original_var" do
+#   # ori_var_dir could be either a symbol link or directory
+#   command "mv -f #{ori_var_dir} #{bak_var_dir}"
+#   action :run
+#   only_if { ::File.exists?(ori_var_dir) }
+# end
+# 
+# link ori_var_dir do
+#   owner "couchbase"
+#   group "couchbase"
+#   to ebs_var_dir
+# end
 
 ruby_block "block_until_operational" do
   block do
