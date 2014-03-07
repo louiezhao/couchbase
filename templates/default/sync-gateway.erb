@@ -1,0 +1,98 @@
+#!/bin/sh
+#
+# Startup / shutdown script for the couchbase sync gateway
+#
+### BEGIN INIT INFO
+# Provides:          couchbase-sync-gateway
+# Required-Start:    $network $local_fs
+# Required-Stop:
+# Should-Start:      $named
+# Should-Stop:
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    couchbase sync gateway
+# Description:          couchbase sync gateway
+
+### END INIT INFO
+
+. /etc/init.d/functions
+
+if [ "$(id -u)" != "0" ]; then
+    echo "Must run as root"
+    exit 1
+fi
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+DAEMON=/opt/couchbase-sync-gateway/bin/sync_gateway
+CONF=/opt/couchbase-sync-gateway/var/etc/sync_gateway.json
+LOGFILE=/opt/couchbase-sync-gateway/var/lib/couchbase/logs/start.log
+PIDFILE=/opt/couchbase-sync-gateway/var/lib/couchbase/couchbase-sync-gateway.pid
+
+test -f $DAEMON || exit 0
+
+# Otherwise, RHEL (and apparently Fedora) tries to "help" and set soft
+# limit of core file size to 0 for daemons. It's done as part of
+# daemon shell function shortly after changing user. See MB-6601
+DAEMON_COREFILE_LIMIT=unlimited
+
+start() {
+    touch $PIDFILE
+    chown couchbase $PIDFILE
+    cd /opt/couchbase-sync-gateway/var/lib/couchbase
+    ulimit -n 10240
+    ulimit -c unlimited
+    ulimit -l unlimited
+    daemon --user couchbase "$DAEMON $CONF > $LOGFILE 2>&1 &"
+    errcode=$?
+    return $errcode
+}
+
+stop() {
+    killproc $DAEMON
+    errcode=$?
+    return $errcode
+}
+
+running() {
+    ps ax | grep -v grep | grep $DAEMON > /dev/null
+    errcode=$?
+    return $errcode
+}
+
+case $1 in
+    start)
+        if running ; then
+            warning && echo "couchbase-sync-gateway is already started"
+            exit 0
+        fi
+        echo -n $"Starting couchbase-sync-gateway"
+        start
+        echo
+        ;;
+    stop)
+        echo -n $"Stopping couchbase-sync-gateway"
+        stop
+        echo
+        ;;
+    restart)
+        echo -n $"Stopping couchbase-sync-gateway"
+        stop
+        echo
+        echo -n $"Starting couchbase-sync-gateway"
+        start
+        echo
+        ;;
+    status)
+        if running ; then
+            echo "couchbase-sync-gateway is running"
+            exit 0
+        else
+            echo "couchbase-sync-gateway is not running"
+            exit 3
+        fi
+        ;;
+    *)
+        echo "Usage: /etc/init.d/sync-gateway {start|stop|restart|status}" >&2
+        exit 3
+esac

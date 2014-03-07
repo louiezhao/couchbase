@@ -24,7 +24,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-::Chef::Recipe.send(:include, Opscode::OpenSSL::Password)
+# ::Chef::Recipe.send(:include, Opscode::OpenSSL::Password)
 
 if Chef::Config[:solo]
   missing_attrs = %w{
@@ -70,6 +70,34 @@ when "windows"
     installer_type :custom
     action :install
   end
+end
+
+ori_var_dir = File.join(node['couchbase']['server']['install_dir'],"var")
+bak_var_dir = File.join(node['couchbase']['server']['install_dir'],"var.bak")
+ebs_var_dir = File.join(node['couchbase']['server']['ebs_dir'],"var")
+
+directory node['couchbase']['server']['ebs_dir'] do
+  owner "couchbase"
+  group "couchbase"
+  mode 0755
+end
+
+execute "move_var_to_ebs" do
+  command "mv #{ori_var_dir} #{node['couchbase']['server']['ebs_dir']}"
+  creates ebs_var_dir
+  action :run
+end
+
+execute "backup_original_var" do
+  command "mv -f #{ori_var_dir} #{bak_var_dir}"
+  action :run
+  only_if { ::File.exists?(ori_var_dir)}
+end
+
+link ori_var_dir do
+  owner "couchbase"
+  group "couchbase"
+  to ebs_var_dir
 end
 
 ruby_block "block_until_operational" do

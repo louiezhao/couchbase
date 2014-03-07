@@ -10,10 +10,11 @@ version          "1.1.0"
   supports os
 end
 
-%w{apt openssl windows yum}.each do |d|
-  depends d
-end
+# %w{apt openssl windows yum}.each do |d|
+#   depends d
+# end
 
 recipe "couchbase::server", "Installs couchbase-server"
+recipe "couchbase::sync-gateway", "Installs couchbase-sync-gateway"
 recipe "couchbase::client", "Installs libcouchbase"
 recipe "couchbase::moxi", "Installs moxi-server"
