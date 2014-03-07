@@ -72,6 +72,11 @@ when "windows"
   end
 end
 
+# servie has been started when yum install. stop it first
+service "couchbase-server" do
+  action :stop
+end
+
 ori_var_dir = File.join(node['couchbase']['server']['install_dir'],"var")
 bak_var_dir = File.join(node['couchbase']['server']['install_dir'],"var.bak")
 ebs_var_dir = File.join(node['couchbase']['server']['ebs_dir'],"var")
@@ -89,9 +94,10 @@ execute "move_var_to_ebs" do
 end
 
 execute "backup_original_var" do
+  # ori_var_dir could be either a symbol link or directory
   command "mv -f #{ori_var_dir} #{bak_var_dir}"
   action :run
-  only_if { ::File.exists?(ori_var_dir)}
+  only_if { ::File.exists?(ori_var_dir) }
 end
 
 link ori_var_dir do
