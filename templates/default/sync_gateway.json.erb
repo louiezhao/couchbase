@@ -1,20 +1,69 @@
 {
-  "interface":":4984",
-  "adminInterface":":4985",
-  "log":["REST"],
-  "databases":{
-    "frontlog":{
-      "server":"<%= node['couchbase']['sync-gateway']['server_url'] %>",
-      "bucket":"frontlog",
-      "sync":`function (doc, oldDoc) {
-        channel(doc.channels);
-        if (oldDoc && !oldDoc._deleted) {
-          requireAccess(oldDoc.channels);
+   "interface":":4984",
+   "adminInterface":":4985",
+   "log":["REST"],
+   "databases":{
+      "frontlog":{
+         "server":"<%= node['couchbase']['sync-gateway']['server_url'] %>",
+         "bucket":"frontlog",
+         "sync":`function (doc, oldDoc) {
+  var chnls = doc.channels;
+  if (!chnls) {
+    chnls = [];
+  }
+  if (doc.write_channels) {
+    chnls.concat(doc.write_channels);
+  }
+  channel(chnls);
+  
+  // write_channels can not be overrided.
+  if (oldDoc && !oldDoc._deleted && !doc._deleted && oldDoc.write_channels != doc.write_channels) {
+    if (!oldDoc.write_channels && doc.write_channels || (oldDoc.write_channels && !doc.write_channels)) {
+      throw({forbidden: "can't modify write_channels"});
+    }
+    if (oldDoc.write_channels && doc.write_channels) {
+      if (oldDoc.write_channels.length != doc.write_channels.length) {
+        throw({forbidden: "can't modify write_channels"});
+      }
+      for (var i = 0; i < oldDoc.write_channels.length; i++) {
+        if(oldDoc.write_channels[i] != doc.write_channels[i]) {
+          throw({forbidden: "can't modify write_channels"});
         }
-        if (doc && !doc._deleted) {
-          requireAccess(doc.channels);
-        }
-      }`
+      }
     }
   }
+  
+  // user should either has access to all channels in "channels"
+  // or has access to at lease one channel in "write_channels"
+  if (oldDoc && !oldDoc._deleted) {
+    try {
+      requireAccess(oldDoc.write_channels)
+    } catch (x) {
+      if (oldDoc.channels) {
+        for (var i = oldDoc.channels.length - 1; i >= 0; i--) {
+          requireAccess(oldDoc.channels[i])
+        }
+      }
+      else {
+        throw({forbidden: "missing channel access"});
+      }
+    }
+  }
+  if (doc && !doc._deleted) {
+    try {
+      requireAccess(doc.write_channels)
+    } catch (x) {
+      if (doc.channels) {
+        for (var i = doc.channels.length - 1; i >= 0; i--) {
+          requireAccess(doc.channels[i])
+        }
+      }
+      else {
+        throw({forbidden: "missing channel access"});
+      }
+    }
+  }
+}`
+      }
+   }
 }
