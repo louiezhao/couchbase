@@ -22,7 +22,7 @@
 package_machine = node['kernel']['machine'] == "x86_64" ? "x86_64" : "x86"
 
 default['couchbase']['sync-gateway']['edition'] = "community"
-default['couchbase']['sync-gateway']['version'] = "1.0-beta"
+default['couchbase']['sync-gateway']['version'] = "1.0.0"
 default['couchbase']['sync-gateway']['package_file'] = "couchbase-sync-gateway-#{node['couchbase']['sync-gateway']['edition']}_#{node['couchbase']['sync-gateway']['version']}2_#{package_machine}.rpm"
 default['couchbase']['sync-gateway']['package_base_url'] = "http://packages.couchbase.com/releases/couchbase-sync-gateway/#{node['couchbase']['sync-gateway']['version']}"
 default['couchbase']['sync-gateway']['package_full_url'] = "#{node['couchbase']['sync-gateway']['package_base_url']}/#{node['couchbase']['sync-gateway']['package_file']}"
