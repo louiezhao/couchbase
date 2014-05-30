@@ -91,3 +91,11 @@ template "sync-gateway" do
     notifies :create, "ruby_block[block_until_operational]", :immediately
   end
 end
+
+template "#{node[:monit][:conf_dir]}/sync-gateway.monitrc" do
+  source 'sync-gateway.monitrc.erb'
+  owner 'root'
+  group 'root'
+  mode 0644
+  notifies :restart, "service[monit]"
+end

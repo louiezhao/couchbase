@@ -1,0 +1,4 @@
+check process sync_gateway with pidfile "/opt/couchbase-sync-gateway/var/lib/couchbase/couchbase-sync-gateway.pid"
+  start program = "/etc/init.d/sync-gateway start"
+  stop program = "/etc/init.d/sync-gateway stop"
+  if failed host 127.0.0.1 port 4985 protocol http then restart
