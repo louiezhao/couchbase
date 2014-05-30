@@ -78,6 +78,10 @@ service "sync-gateway" do
   action :nothing
 end
 
+service 'monit' do
+  action :nothing
+end
+
 template "sync-gateway" do
   path "/etc/init.d/sync-gateway"
   source "sync-gateway.erb"
