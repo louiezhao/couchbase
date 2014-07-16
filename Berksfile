@@ -4,4 +4,3 @@ group :integration do
 end
 
 metadata
-cookbook "yum", "~> 2.0"

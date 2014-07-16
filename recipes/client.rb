@@ -40,16 +40,11 @@ when "debian"
   end
 
 when "rhel"
-  yum_key "couchbase-rpm.key" do
-    url "http://packages.couchbase.com/rpm/couchbase-rpm.key"
-    action :add
-  end
-
   case
   when node['platform_version'].to_f >= 5.0 && node['platform_version'].to_f < 6.0
-    osver = '55'
+    osver = '5.5'
   when node['platform_version'].to_f >= 6.0
-    osver = '62'
+    osver = '6.2'
   else
     Chef::Log.error("Platform version #{node['platform_version']} is unsupported by Couchbase C library")
   end
@@ -57,9 +52,9 @@ when "rhel"
   yum_repository "couchbase" do
     name "couchbase"
     description "Couchbase package repository"
-    # url "http://packages.couchbase.com/rpm/#{osver}/$basearch/"
-    url "http://packages.couchbase.com/rpm/couchbase-centos#{osver}-x86_64.repo"
-    action :add
+    baseurl "http://packages.couchbase.com/rpm/#{osver}/$basearch/"
+    gpgkey "http://packages.couchbase.com/rpm/couchbase-rpm.key"
+    action :create
   end
 
   %w{libcouchbase2 libcouchbase-devel}.each do |p|
