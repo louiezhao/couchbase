@@ -14,9 +14,9 @@ end
 #   depends d
 # end
 
+depends "yum"
+
 recipe "couchbase::server", "Installs couchbase-server"
 recipe "couchbase::sync-gateway", "Installs couchbase-sync-gateway"
 recipe "couchbase::client", "Installs libcouchbase"
 recipe "couchbase::moxi", "Installs moxi-server"
-
-depends "yum"

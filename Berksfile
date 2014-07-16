@@ -4,5 +4,3 @@ group :integration do
 end
 
 metadata
-
-cookbook "yum"
