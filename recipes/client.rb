@@ -40,10 +40,10 @@ when "debian"
   end
 
 when "rhel"
-  # yum_key "couchbase-rpm.key" do
-  #   url "http://packages.couchbase.com/rpm/couchbase-rpm.key"
-  #   action :add
-  # end
+  yum_key "couchbase-rpm.key" do
+    url "http://packages.couchbase.com/rpm/couchbase-rpm.key"
+    action :add
+  end
 
   case
   when node['platform_version'].to_f >= 5.0 && node['platform_version'].to_f < 6.0
